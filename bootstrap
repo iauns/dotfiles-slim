@@ -35,7 +35,7 @@ install_dotfiles () {
 
   info "${1}ing dotfiles to $target_dir"
 
-  overwrite_all=false
+  overwrite_all=true
   backup_all=false
   skip_all=false
 
