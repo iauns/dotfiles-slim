@@ -10,7 +10,7 @@ echo ''
 # All files / folders placed in the following ignore array will be ignored when
 # traversing the filesystem looking for files to sym-link.
 # Directories as well as files will be checked against this array.
-ignore=( "./.git" "./.gitignore" "./bootstrap" "./unused" "./README.md" "./nolink" )
+ignore=( "./.git" "./.gitignore" "./bootstrap" "./unused" "./README.md" "./LICENSE" "./nolink" )
 
 link_files () {
   $3 ln -s "$1" "$2"
