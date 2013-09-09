@@ -174,5 +174,12 @@ install_dotfiles () {
 # Symlink current files and all subdirectories
 install_dotfiles "link" ${HOME}
 
+# Ensure all bundles are installed for VIM
+if [ ! -d ${HOME}/.vim/bundle/vundle ]; then
+  mkdir -p ${HOME}/.vim/bundle
+  git clone https://github.com/gmarik/vundle.git ${HOME}/.vim/bundle/vundle
+fi
+vim +BundleInstall +qall
+
 echo ''
 echo '  All installed!'
