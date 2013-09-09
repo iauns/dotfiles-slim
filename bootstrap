@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+cd "$(dirname "$0")"
+source .shutils
+
+DOTFILES_ROOT_REL="."
+
+set -e
+echo ''
+
+# All files / folders placed in the following ignore array will be ignored when
+# traversing the filesystem looking for files to sym-link.
+# Directories as well as files will be checked against this array.
+ignore=( "./.git" "./.gitignore" "./bootstrap" "./unused" "./README.md" "./nolink" )
+
+link_files () {
+  $3 ln -s "$1" "$2"
+  success "linked $1 to $2"
+}
+
+copy_files () {
+  $3 cp $1 $2
+  success "copied $1 to $2"
+}
+
+install_dotfiles () {
+  if [ "$1" == "copy" ]
+  then
+    copy_dot_files=true
+  else
+    copy_dot_files=false
+  fi
+  
+  target_dir=$2
+  command_prefix=$3
+
+  info "${1}ing dotfiles to $target_dir"
+
+  overwrite_all=false
+  backup_all=false
+  skip_all=false
+
+  current_dir=$(pwd)
+  #for source in `find $DOTFILES_ROOT_REL -type f`
+  #for source in `find . -type f -print0 | xargs -0 echo`
+  # The complication below exists so that we can handle spaces in the output of
+  # find...
+
+  # Save and change IFS (we have spaces in the directory names)
+  OLDIFS=$IFS
+  IFS=$'\n'
+
+  # Read all directories into an array.
+  fileArray=($(find $DOTFILES_ROOT_REL -type f -o -type l))
+
+  # Restore IFS
+  IFS=$OLDIFS
+
+  # get length of array
+  tLen=${#fileArray[@]}
+
+  for source in "${fileArray[@]}"
+  do
+    # Check to see if we should ignore the directory.
+    array_skip=false
+    base_dir=$(dirname "$source")
+    for i in "${ignore[@]}"
+    do
+      # Check exact filename match.
+      if [[ "$i" == "$source" ]]
+      then
+        array_skip=true
+      fi
+
+      # Check every possible sub directory
+      base_dir_rec=$base_dir
+      while [[ "$base_dir_rec" != "." ]]
+      do
+        if [[ "$i" ==  "$base_dir_rec" ]]
+        then
+          array_skip=true
+          break
+        fi
+        base_dir_rec=$(dirname "$base_dir_rec")
+      done
+
+      # Break out if we have already determined that we are skipping this 
+      # element.
+      if [ "$array_skip" == "true" ]
+      then
+        break
+      fi
+    done
+
+    if [ "$array_skip" == "true" ]
+    then
+      continue
+    fi
+
+    $command_prefix mkdir -p "$target_dir/$base_dir"
+
+    # Strip off the './'
+    sourceMinusDot="${source:2}"
+    if [ "$target_dir" == "/" ]; then
+      dest="/$sourceMinusDot"
+    else
+      dest="$target_dir/$sourceMinusDot"
+    fi
+    source="$current_dir/$sourceMinusDot"
+
+    if [ -f "$dest" ] || [ -d "$dest" ]
+    then
+
+      overwrite=false
+      backup=false
+      skip=false
+
+      if [ "$overwrite_all" == "false" ] && [ "$backup_all" == "false" ] && [ "$skip_all" == "false" ]
+      then
+        user "File already exists: `basename $source`, what do you want to do?\n        [s]kip, [S]kip all, [o]verwrite, [O]verwrite all, [b]ackup, [B]ackup all?"
+        read -n 1 action
+
+        case "$action" in
+          o )
+            overwrite=true;;
+          O )
+            overwrite_all=true;;
+          b )
+            backup=true;;
+          B )
+            backup_all=true;;
+          s )
+            skip=true;;
+          S )
+            skip_all=true;;
+          * )
+            ;;
+        esac
+      fi
+
+      if [ "$overwrite" == "true" ] || [ "$overwrite_all" == "true" ]
+      then
+        $command_prefix rm "$dest"
+        success "removed $dest"
+      fi
+
+      if [ "$backup" == "true" ] || [ "$backup_all" == "true" ]
+      then
+        $command_prefix mv "$dest" "$dest\.backup"
+        success "moved $dest to $dest.backup"
+      fi
+
+      if [ "$skip" == "false" ] && [ "$skip_all" == "false" ]
+      then
+        if [ "$copy_dot_files" == "true" ]; then
+          copy_files "$source" "$dest" "$command_prefix"
+        else
+          link_files "$source" "$dest" "$command_prefix"
+        fi
+      else
+        success "skipped $source"
+      fi
+
+    else
+      if [ "$copy_dot_files" == "true" ]; then
+        copy_files "$source" "$dest" "$command_prefix"
+      else
+        link_files "$source" "$dest" "$command_prefix"
+      fi
+    fi
+
+  done
+}
+
+# Symlink current files and all subdirectories
+install_dotfiles "link" ${HOME}
+
+echo ''
+echo '  All installed!'
