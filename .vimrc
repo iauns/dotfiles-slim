@@ -230,17 +230,12 @@ noremap <leader>a, :Tabularize /,\zs/l1<CR>
 noremap <leader>a: :Tabularize /:\zs<CR>
 
 " ---------------- EasyMotion ------------------
-let g:EasyMotion_leader_key='<space>'
-
-call EasyMotion#InitOptions({
-      \   'leader_key'      : '<space><space>'
-      \ , 'keys'            : 'htnsbcfgijklpzqrvmwaoeu'
-      \ , 'do_shade'        : 1
-      \ , 'do_mapping'      : 1
-      \ , 'grouping'        : 1
-      \
-      \ , 'hl_group_target' : 'Question'
-      \ , 'hl_group_shade'  : 'EasyMotionShade'
-      \ })
+let g:EasyMotion_leader_key      = '<space><space>'
+let g:EasyMotion_keys            = 'htnsbcfgijklpzqrvmwaoeu'
+let g:EasyMotion_do_shade        = 1
+let g:EasyMotion_do_mapping      = 1
+let g:EasyMotion_grouping        = 1
+let g:EasyMotion_hl_group_target = 'Question'
+let g:EasyMotion_hl_group_shade  = 'EasyMotionShade'
 
 
