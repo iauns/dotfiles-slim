@@ -105,6 +105,9 @@ Bundle 'iauns/vim-subbed'
 Bundle 'tpope/vim-repeat.git'
 Bundle 'tpope/vim-surround.git'
 
+" Clever-f replacment for 'f', 'F', 't', and 'T'
+Bundle 'rhysd/clever-f.vim.git'
+
 " Parameter / Argument text objects.
 Bundle 'vim-scripts/Parameter-Text-Objects.git'
 
